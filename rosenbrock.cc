@@ -90,8 +90,9 @@ int main(int argc, char** argv) {
   const int N = 2;  // 3-D Rosenbrock, i.e f(x1, x2, x3)
   cppmin::LineSearchMinimizer::Summary summary;
   cppmin::LineSearchMinimizer::Options options;
-  options.line_search_direction_type = cppmin::STEEPEST_DESCENT;
-  options.max_num_iterations = 1000;
+  options.line_search_direction_type =
+      cppmin::POLAK_RIBIERE_CONJUGATE_GRADIENT;
+  options.max_num_iterations = 50;
   cppmin::LineSearchMinimizer minimizer(options);
   Rosenbrock rosen(N);
   double solution[N];

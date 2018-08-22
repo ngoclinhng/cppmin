@@ -64,6 +64,7 @@
 #define CPPMIN_LINE_SEARCH_MINIMIZER_H_
 
 #include <cstddef>
+#include <cstring>
 #include <iostream>
 
 #include "cppmin_blas.h"  // NOLINT

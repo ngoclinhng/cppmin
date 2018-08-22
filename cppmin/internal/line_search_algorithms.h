@@ -13,7 +13,7 @@ template<LineSearchDirectionType direction_type> class LineSearchAlgorithm;
 // Steepest descent -------------------------------------------------------
 
 template<>
-class LineSearchAlgorithm <STEEPEST_DESCENT>{
+class LineSearchAlgorithm<STEEPEST_DESCENT>{
  public:
   const LineSearchMinimizer::Options& options;
 
@@ -86,9 +86,8 @@ class LineSearchAlgorithm <STEEPEST_DESCENT>{
 // Preconditioned nonlinear conjugate gradient with Polak-Ribiere parameter
 // See https://www.cs.cmu.edu/~quake-papers/painless-conjugate-gradient.pdf
 // ------------------------------------------------------------------------
-
 template<>
-class LineSearchAlgorithm <POLAK_RIBIERE_CONJUGATE_GRADIENT>{
+class LineSearchAlgorithm<POLAK_RIBIERE_CONJUGATE_GRADIENT>{
  public:
   const LineSearchMinimizer::Options& options;
 
@@ -98,6 +97,124 @@ class LineSearchAlgorithm <POLAK_RIBIERE_CONJUGATE_GRADIENT>{
   template<typename Function>
   void Minimize(const Function& function, double* solution,
                 LineSearchMinimizer::Summary* summary = nullptr) const {
+    const size_t n = function.n_variables();
+
+    if (summary != nullptr) {
+      summary->function_value_at_starting_point = function(solution);
+      summary->total_num_iterations = 0;
+    }
+
+    // Init residual to -gradient
+    double* residual = new double[n];
+    function.Gradient(solution, residual);
+    cppmin_scal(n, -1.0, residual);
+
+    // Init preconditioner (M)
+    if (options.preconditioner != nullptr) {
+      options.preconditioner->Update(n, solution);
+    }
+
+    // Cache the term M`r
+    double* M_inv_r = new double[n];
+    if (options.preconditioner != nullptr) {
+      options.preconditioner->InverseDot(n, residual, M_inv_r);
+    } else {
+      // M is the identity matrix, so that M_inv_r = r
+      std::memcpy(M_inv_r, residual, n * sizeof(double));
+    }
+
+    // Init search direction
+    // We have:
+    //  d_hat = E'.d & r_hat = E`.r
+    // So that:
+    //  E'.d = E`.r <=> d = (E')`.E`.r = (EE')`.r = M`.r
+    double* search_direction = new double[n];
+    std::memcpy(search_direction, M_inv_r, n * sizeof(double));
+
+    // preconditioned residual norm
+    // We have:
+    //  r_hat = E`.r => |r_hat|^2 = r_hat'.r_hat
+    //                            = (E`.r)'.(E`.r)
+    //                            = r'.(EE')`.r
+    //                            = r'.M`.r
+    double preconditioned_residual_norm2 = cppmin_dot(n, residual, M_inv_r);
+    double previous_preconditioned_residual_norm2;
+    double mid_preconditioned_residual_norm2;
+
+    // Polak-Ribiere parameter
+    double polak_ribiere_beta;
+
+    // Init line search
+    LineSearch<Function>* line_search =
+        LineSearch<Function>::Create(options);
+    double step_size;
+
+    // The algorithm terminates if
+    //  precondition_residual_norm2 <= epsilon
+    // or if
+    //  iter >= options().max_num_iterations
+    const double epsilon = options.tolerance * options.tolerance *
+        preconditioned_residual_norm2;
+    size_t iter = 0;
+
+    while (iter < options.max_num_iterations &&
+           preconditioned_residual_norm2 > epsilon) {
+      // Compute step size
+      step_size = line_search->Search(function, solution, search_direction);
+
+      // Update solution
+      //  solution = step_size * search_direction + solution
+      cppmin_axpy(n, step_size, search_direction, solution);
+
+      // Update residual to current -gradient
+      function.Gradient(solution, residual);
+      cppmin_scal(n, -1.0, residual);
+
+      // Compute Polak-Ribiere parameter
+
+      previous_preconditioned_residual_norm2 = preconditioned_residual_norm2;
+      mid_preconditioned_residual_norm2 = cppmin_dot(n, residual, M_inv_r);
+
+      // Update preconditioner
+      if (options.preconditioner != nullptr) {
+        options.preconditioner->Update(n, solution);
+        options.preconditioner->InverseDot(n, residual, M_inv_r);
+      } else {
+        std::memcpy(M_inv_r, residual, n * sizeof(double));
+      }
+
+      preconditioned_residual_norm2 = cppmin_dot(n, residual, M_inv_r);
+      polak_ribiere_beta =
+          (preconditioned_residual_norm2 - mid_preconditioned_residual_norm2) /
+          previous_preconditioned_residual_norm2;
+
+      // Update search direction
+      cppmin_scal(n, polak_ribiere_beta, search_direction);
+      cppmin_axpy(n, 1.0, M_inv_r, search_direction);
+
+      // Since nonlinear conjugate gradients with Polak-Ribiere parameter
+      // doesn't not guarentee to provide a descent search direction, we
+      // need to restart it whenever the new computed search_direction is
+      // not a descent direction.
+      if (cppmin_dot(n, search_direction, M_inv_r) <= 0) {
+        std::memcpy(search_direction, M_inv_r, n * sizeof(double));
+      }
+
+      ++iter;
+
+      if (summary != nullptr) {
+        ++summary->total_num_iterations;
+      }
+    }
+
+    if (summary != nullptr) {
+      summary->function_value_at_estimated_solution = function(solution);
+    }
+
+    delete[] residual;
+    delete[] search_direction;
+    delete[] M_inv_r;
+    delete line_search;
   }
 };
 
