@@ -251,16 +251,16 @@ class LineSearchMinimizer {
 
     friend std::ostream& operator<<(std::ostream& os,
                                     const Summary& summary) {
-      os << "Function value at starting point: "
+      os << "-- Function value at starting point: "
          << std::scientific << summary.function_value_at_starting_point
          << "\n";
-      os << "Function value at estimated solution: "
+      os << "-- Function value at estimated solution: "
          << std::scientific
          << summary.function_value_at_estimated_solution << "\n";
-      os << "Gradient L2-norm at estimated solution: "
+      os << "-- Gradient L2-norm at estimated solution: "
          << std::scientific
          << summary.gradient_norm_at_estimated_solution << "\n";
-      os << "Total number of iterations: "
+      os << "-- Total number of iterations: "
          << summary.total_num_iterations;
       return os;
     }

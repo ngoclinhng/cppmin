@@ -89,11 +89,7 @@ struct Rosenbrock {
 int main(int argc, char** argv) {
   const int N = 3;  // 3-D Rosenbrock, i.e f(x1, x2, x3)
   cppmin::LineSearchMinimizer::Summary summary;
-  cppmin::LineSearchMinimizer::Options options;
-  options.line_search_direction_type =
-      cppmin::FLETCHER_REEVES_CONJUGATE_GRADIENT;
-  options.max_num_iterations = 50;
-  cppmin::LineSearchMinimizer minimizer(options);
+  cppmin::LineSearchMinimizer minimizer;
   Rosenbrock rosen(N);
   double solution[N];
 
@@ -105,6 +101,7 @@ int main(int argc, char** argv) {
   minimizer.Minimize(rosen, solution, &summary);
   std::cout << summary << std::endl;
 
+  std::cout << "Solution: " << std::endl;
   for (int i = 0; i < N; ++i) {
     std::cout << solution[i] << "\n";
   }
