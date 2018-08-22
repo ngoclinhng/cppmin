@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
   cppmin::LineSearchMinimizer::Summary summary;
   cppmin::LineSearchMinimizer::Options options;
   options.line_search_direction_type =
-      cppmin::POLAK_RIBIERE_CONJUGATE_GRADIENT;
+      cppmin::FLETCHER_REEVES_CONJUGATE_GRADIENT;
   options.max_num_iterations = 50;
   cppmin::LineSearchMinimizer minimizer(options);
   Rosenbrock rosen(N);

@@ -224,7 +224,7 @@ class LineSearchAlgorithm<POLAK_RIBIERE_CONJUGATE_GRADIENT>{
 // -------------------------------------------------------------------------
 
 template<>
-class LineSearchAlgorithm <FLETCHER_REEVES_CONJUGATE_GRADIENT>{
+class LineSearchAlgorithm<FLETCHER_REEVES_CONJUGATE_GRADIENT>{
  public:
   const LineSearchMinimizer::Options& options;
 
@@ -234,6 +234,110 @@ class LineSearchAlgorithm <FLETCHER_REEVES_CONJUGATE_GRADIENT>{
   template<typename Function>
   void Minimize(const Function& function, double* solution,
                 LineSearchMinimizer::Summary* summary = nullptr) const {
+    const size_t n = function.n_variables();
+
+    if (summary != nullptr) {
+      summary->function_value_at_starting_point = function(solution);
+      summary->total_num_iterations = 0;
+    }
+
+    // Init residual to -gradient
+    double* residual = new double[n];
+    function.Gradient(solution, residual);
+    cppmin_scal(n, -1.0, residual);
+
+    // Cache the term M`r
+    double* M_inv_r = new double[n];
+    if (options.preconditioner != nullptr) {
+      options.preconditioner->Update(n, solution);
+      options.preconditioner->InverseDot(n, residual, M_inv_r);
+    } else {
+      // M is identity, so that M`r = r
+      std::memcpy(M_inv_r, residual, n * sizeof(double));
+    }
+
+    // Init search direction
+    double* search_direction = new double[n];
+    std::memcpy(search_direction, M_inv_r, n * sizeof(double));
+
+    // Preconditioned residual squares norm
+    // We have
+    //  r_hat = E`.r => |r_hat|^2 = r_hat'.r_hat
+    //                            = r'.(EE')`.r
+    //                            = r'.M`.r = r`.M_inv_r
+    double preconditioned_residual_norm2;
+    double previous_preconditioned_residual_norm2;
+    preconditioned_residual_norm2 = cppmin_dot(n, residual, M_inv_r);
+
+    // Init line search
+    LineSearch<Function>* line_search =
+        LineSearch<Function>::Create(options);
+    double step_size;
+
+    // This algorithm terminates if
+    //  preconditioned_residual_norm2 <= epsilon
+    // or if
+    //  iter >= options().max_num_iterations
+    const double epsilon = options.tolerance * options.tolerance *
+        preconditioned_residual_norm2;
+    size_t iter = 0;
+
+    // Fletcher-Reeves parameter
+    double fletcher_reeves_beta;
+
+    while (iter < options.max_num_iterations &&
+           preconditioned_residual_norm2 > epsilon) {
+      // Compute step size
+      step_size = line_search->Search(function, solution, search_direction);
+
+      // Update solution & residual
+      //  solution <- step_size * search_direction + solution
+      //  residual <- -gradient(solution)
+      cppmin_axpy(n, step_size, search_direction, solution);
+      function.Gradient(solution, residual);
+      cppmin_scal(n, -1.0, residual);
+
+      previous_preconditioned_residual_norm2 = preconditioned_residual_norm2;
+
+      // Update the term M`r
+      if (options.preconditioner != nullptr) {
+        options.preconditioner->Update(n, solution);
+        options.preconditioner->InverseDot(n, residual, M_inv_r);
+      } else {
+        std::memcpy(M_inv_r, residual, n * sizeof(double));
+      }
+
+      // Compute Fletcher-Reeves parameter
+      preconditioned_residual_norm2 = cppmin_dot(n, residual, M_inv_r);
+      fletcher_reeves_beta = preconditioned_residual_norm2 /
+          previous_preconditioned_residual_norm2;
+
+      // Update search direction
+      //  search_direction <- M_inv_r + beta * search_direction
+      cppmin_scal(n, fletcher_reeves_beta, search_direction);
+      cppmin_axpy(n, 1.0, M_inv_r, search_direction);
+
+      // We need to restart CG if the new computed search_direction is not
+      // a descent direction
+      if (cppmin_dot(n, search_direction, M_inv_r) <= 0) {
+        std::memcpy(search_direction, M_inv_r, n * sizeof(double));
+      }
+
+      ++iter;
+
+      if (summary != nullptr) {
+        ++summary->total_num_iterations;
+      }
+    }
+
+    if (summary != nullptr) {
+      summary->function_value_at_estimated_solution = function(solution);
+    }
+
+    delete[] residual;
+    delete[] M_inv_r;
+    delete[] search_direction;
+    delete line_search;
   }
 };
 
