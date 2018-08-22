@@ -35,6 +35,12 @@ inline
 double cppmin_dot(const int N, const double* X, const double* Y) {
   return cblas_ddot(N, X, 1, Y, 1);
 }
+
+// L2-norm of a vector X
+inline
+double cppmin_nrm2(const int N, const double* X) {
+  return cblas_dnrm2(N, X, 1);
+}
 }  // namespace cppmin
 #endif  // CPPMIN_CPPMIN_BLAS_H_
 

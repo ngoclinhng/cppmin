@@ -87,7 +87,7 @@ struct Rosenbrock {
 };
 
 int main(int argc, char** argv) {
-  const int N = 2;  // 3-D Rosenbrock, i.e f(x1, x2, x3)
+  const int N = 3;  // 3-D Rosenbrock, i.e f(x1, x2, x3)
   cppmin::LineSearchMinimizer::Summary summary;
   cppmin::LineSearchMinimizer::Options options;
   options.line_search_direction_type =

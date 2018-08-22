@@ -240,19 +240,26 @@ class LineSearchMinimizer {
   struct Summary {
     double function_value_at_starting_point;
     double function_value_at_estimated_solution;
+    double gradient_norm_at_estimated_solution;
     size_t total_num_iterations;
 
     Summary()
         : function_value_at_starting_point(0.0),
           function_value_at_estimated_solution(0.0),
+          gradient_norm_at_estimated_solution(0.0),
           total_num_iterations(0) {}
 
     friend std::ostream& operator<<(std::ostream& os,
                                     const Summary& summary) {
       os << "Function value at starting point: "
-         << summary.function_value_at_starting_point << "\n";
+         << std::scientific << summary.function_value_at_starting_point
+         << "\n";
       os << "Function value at estimated solution: "
+         << std::scientific
          << summary.function_value_at_estimated_solution << "\n";
+      os << "Gradient L2-norm at estimated solution: "
+         << std::scientific
+         << summary.gradient_norm_at_estimated_solution << "\n";
       os << "Total number of iterations: "
          << summary.total_num_iterations;
       return os;

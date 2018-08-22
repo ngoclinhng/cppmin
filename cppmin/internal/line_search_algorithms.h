@@ -74,8 +74,12 @@ class LineSearchAlgorithm<STEEPEST_DESCENT>{
     }
 
     if (summary != nullptr) {
-      summary->function_value_at_estimated_solution =
-          function(solution);
+      summary->function_value_at_estimated_solution = function(solution);
+      double *gradient_at_solution = new double[n];
+      function.Gradient(solution, gradient_at_solution);
+      summary->gradient_norm_at_estimated_solution =
+          cppmin_nrm2(n, gradient_at_solution);
+      delete[] gradient_at_solution;
     }
 
     delete[] gradient;
@@ -209,6 +213,11 @@ class LineSearchAlgorithm<POLAK_RIBIERE_CONJUGATE_GRADIENT>{
 
     if (summary != nullptr) {
       summary->function_value_at_estimated_solution = function(solution);
+      double* gradient_at_solution = new double[n];
+      function.Gradient(solution, gradient_at_solution);
+      summary->gradient_norm_at_estimated_solution =
+          cppmin_nrm2(n, gradient_at_solution);
+      delete[] gradient_at_solution;
     }
 
     delete[] residual;
@@ -332,6 +341,11 @@ class LineSearchAlgorithm<FLETCHER_REEVES_CONJUGATE_GRADIENT>{
 
     if (summary != nullptr) {
       summary->function_value_at_estimated_solution = function(solution);
+      double* gradient_at_solution = new double[n];
+      function.Gradient(solution, gradient_at_solution);
+      summary->gradient_norm_at_estimated_solution =
+          cppmin_nrm2(n, gradient_at_solution);
+      delete[] gradient_at_solution;
     }
 
     delete[] residual;
