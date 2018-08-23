@@ -71,8 +71,7 @@ int main(int argc, char** argv) {
 
 ```
 The only dependency that you need in order to compile and run the above code
-is to link it against a BLAS libary ([OpenBLAS](https://www.openblas.net/), [MKL](https://software.intel.com/en-us/mkl), [Apple Accelerate](https://developer.apple.com/documentation/accelerate/blas?language=objc), etc..). For instance, if you are a
-Mac user, you could compile the above code as follows:
+is to link it against a BLAS libary ([OpenBLAS](https://www.openblas.net/), [MKL](https://software.intel.com/en-us/mkl), [Apple Accelerate](https://developer.apple.com/documentation/accelerate/blas?language=objc), etc..). For instance, if you are a Mac user, you could compile the above code as follows:
 
 ```console
 g++ -o rosenbrock rosenbrock.cc -DCPPMIN_USE_ACCELERATE -framework Accelerate
