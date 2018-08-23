@@ -101,7 +101,8 @@ estimates the global minimizer of `f` by building a sequence `{x_k}` such that `
 
 2. Repeat until some stopping criteria are met (usually the L2-norm of
 gradient falls below some threshold):
-  * Use some line search algorithm ([Armijo](https://en.wikipedia.org/wiki/Backtracking_line_search), [Wolfe](https://en.wikipedia.org/wiki/Wolfe_conditions), etc...) to compute the `step_size` along the `search_direction` so that:
+  * Use some line search algorithm ([Armijo](https://en.wikipedia.org/wiki/Backtracking_line_search), [Wolfe](https://en.wikipedia.org/wiki/Wolfe_conditions), etc...) to compute a suitable `step_size` along the `search_direction`
+  so that:
   
     `f(x_k + step_size * search_direction) < f(x_k)`
   
