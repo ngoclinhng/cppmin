@@ -87,6 +87,7 @@ Or if you has OpenBLAS:
 
 ```shell
 g++ -I/path/to/OpenBLAS/include -L/path/to/OpenBLAS/lib -o rosenbrock rosenbrock.cc -lopenblas
+```
 
 LineSearchMinimizer
 ===================
