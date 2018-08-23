@@ -7,8 +7,11 @@
 #ifndef CPPMIN_CPPMIN_BLAS_H_
 #define CPPMIN_CPPMIN_BLAS_H_
 
+// External BLAS library
 #ifdef CPPMIN_USE_ACCELERATE
 #include <Accelerate/Accelerate.h>
+#elif defined(CPPMIN_USE_MKL)
+#include <mkl.h>
 #else
 extern "C" {
   #include <cblas.h>
