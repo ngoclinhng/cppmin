@@ -95,7 +95,7 @@ LineSearchMinimizer
 The idea of [line search minimization](https://en.wikipedia.org/wiki/Line_search) is rather simple:
 
 Given the objective function `f`, a starting point `x`, `LineSearchMinimizer`
-estimates the global minimizer of `f` by building a sequence `{x_k}` such that `f(x_{k+1}) <= f(x_k)`, and `|f'(x_k)| -> 0` as `k -> infinity`. It does that using the following algorithm:
+estimates the global minimizer of `f` by building a sequence `{x_k}` such that `f(x_{k+1}) < f(x_k)`, and `|f'(x_k)| -> 0` as `k -> infinity`. It does that using the following algorithm:
 
 1. Setup: Initialize a `search_direction` (usually the steepest descent direction at the starting point `-f(x)`).
 
@@ -109,3 +109,5 @@ gradient falls below some threshold):
   * Update solution: `x <- x + step_size * search_direction`
 
   * Update `search_direction`.
+
+### Armijo and Wolfe Line Search
