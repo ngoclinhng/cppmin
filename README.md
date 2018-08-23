@@ -88,3 +88,16 @@ Or if you has OpenBLAS:
 ```shell
 g++ -I/path/to/OpenBLAS/include -L/path/to/OpenBLAS/lib -o rosenbrock rosenbrock.cc -lopenblas
 
+LineSearchMinimizer
+===================
+
+The idea of [line search minimization](https://en.wikipedia.org/wiki/Line_search) is rather simple:
+1. Setup:
+  * Initialize a starting point `x`
+  * Initialize a search direction `search_direction`
+2. Repeat until some stopping criteria are met (usually the gradient norm
+falls below some threshold):
+  * Use line search algorithm like `ARMIJO` or `WOLFE` to compute the step
+  size along the `search_direction`.
+  * Update solution: `x <- x + step_size * search_direction`
+  * Update `search_direction`.
