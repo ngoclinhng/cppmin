@@ -11,6 +11,8 @@ details, let first take a look at an example of using __cppmin__ to estimate
 the global minimizer of a simple [Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function)
 
 ```cpp
+// rosenbrock.cc
+
 #include <iostream>
 #include "cppmin/line_search_minimizer.h"
 
@@ -49,20 +51,30 @@ struct Rosenbrock {
  }
 };
 
-// Use default LineSearchMinimizer
-cppmin::LineSearchMinimizer::Summary summary;
-cppmin::LineSearchMinimizer minimizer;
+int main(int argc, char** argv) {
+ // Use default LineSearchMinimizer
+ cppmin::LineSearchMinimizer::Summary summary;
+ cppmin::LineSearchMinimizer minimizer;
 
-Rosenbrock rosen;
-double solution[2] = {0.0, 0.0}  // starting point is (0, 0)
+ Rosenbrock rosen;
+ double solution[2] = {0.0, 0.0};  // starting point is (0, 0)
 
-minimizer.Minimize(rosen, solution, &summary);
-std::cout << summary << std::endl;
+ minimizer.Minimize(rosen, solution, &summary);
+ std::cout << summary << std::endl;
 
-std::cout << "Solution: " << std::endl;
-std::cout << "x = " << solution[0] << std::endl;
-std::cout << "y = " << solution[1] << std::endl;
+ std::cout << "Solution: " << std::endl;
+ std::cout << "x = " << solution[0] << std::endl;
+ std::cout << "y = " << solution[1] << std::endl;
 
-return 0;
+ return 0;
+}
 
+```
+The only dependency that you need in order to compile and run the above code
+is to link it against a BLAS libary ([OpenBLAS](https://www.openblas.net/), [MKL](https://software.intel.com/en-us/mkl), [Apple Accelerate](https://developer.apple.com/documentation/accelerate/blas?language=objc), etc..). For instance, if you are a
+Mac user, you could compile the above code as follows:
+
+```console
+g++ -o rosenbrock rosenbrock.cc -DCPPMIN_USE_ACCELERATE -framework Accelerate
+./rosenbrock
 ```

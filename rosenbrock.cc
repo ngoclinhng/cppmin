@@ -10,100 +10,55 @@
 
 #include "cppmin/line_search_minimizer.h"
 
-// N-dimensional Rosenbrock function
+// Create a Rosenbrock function
 //
-//  f(x) = sum 100 * (x_{i+1} - x_i^2)^2 + (1 - x_i)^2
-//  (sum taken from i = 1 upto N - 1)
+//  f(x, y) = 100 * (y - x^2)^2 + (1 - x)^2
 //
-// N-dimensional Rosenbrock has a unique global minimizer at (1, 1, .., 1)'
-// and the minimum is 0.0
+// This function has a unique global minimizer at (1, 1) and f(1, 1) = 0
 struct Rosenbrock {
-  // Default is 3-D Rosenbrock
-  Rosenbrock() : N_(2) {}
-  explicit Rosenbrock(const int N) : N_(N) {}
+  // Returns number of variables (which is 2 in our case)
+  int n_variables() const { return 2; }
 
-  // Returns number of variables (i.e dimension)
-  int n_variables() const { return N_; }
-
-  // Evaluates the value of Rosenbrock at a given position
-  //  position = [x1, x2, ..., xn]
-  double operator()(const double* x) const {
-    double ret = 0.0;
-    double xi;
-    double xi1;
-
-    for (int i = 0; i < N_ - 1; ++i) {
-      xi = x[i];
-      xi1 = x[i+1];
-
-      ret += 100.0 * (xi1 - xi * xi) * (xi1 - xi * xi) +
-          (1.0 - xi) * (1.0 - xi);
-    }
-
-    return ret;
+  // Evaluates the value of this function at a given position = (x, y)
+  double operator()(const double* position) const {
+    const double x = position[0];
+    const double y = position[1];
+    double t1, t2;
+    t1 = y - x * x;
+    t2 = 1 - x;
+    return 100.0 * t1 * t1 + t2 * t2;
   }
 
-  // Evaluates the gradient of Rosenbrock at a given position
-  //  position = [x1, x2, ..., xn]
-  //
-  //  f(x) = sum [100(x_{i+1} - x_i*x_i)^2 + (1 - x_i)^2]
-  //       = sum t_i for i = 1 upto n-1
-  //
-  // We have
-  //
-  //  dt_i
-  //  ---- = -400 * xi * (xi1 - xi^2) - 2 * (1 - xi)
-  //  dxi
-  //
-  //  dt_i
-  //  ---- = 200 * (xi1 - xi^2)
-  //  dxi1
+  // Evaluates the gradient of this function at a given position = (x, y)
   void Gradient(const double* position, double* gradient) const {
-    double xi;
-    double xi1;  // x_{i+1}
-    double xi2;  // x_{i+2}
+    const double x = position[0];
+    const double y = position[1];
+    double t1, t2;
+    t1 = y - x * x;
+    t2 = 1 - x;
 
-    double ti_xi = 0.0;  // gradient of the term t_i w.r.t x_i
-    double ti_xi1 = 0.0;  // gradient of the term t_i w.r.t x_{i+1}
+    // partial derivative of f w.r.t x
+    gradient[0] = 200.0 * (-2.0 * x) * t1 - 2.0 * t2;
 
-    double previous = 0.0;
-
-    int i;
-    for (i = 0; i < N_ - 1; ++i) {
-      xi = position[i];
-      xi1 = position[i+1];
-
-      ti_xi = -400.0 * xi* (xi1 - xi * xi) - 2.0 * (1 - xi);
-      ti_xi1 = 200.0 * (xi1 - xi * xi);
-
-      gradient[i] = previous + ti_xi;
-      previous = ti_xi1;
-    }
-    gradient[i] = previous;
+    // partial derivative of f w.r.t y
+    gradient[1] = 200.0 * t1;
   }
-
- private:
-  int N_;  // dimension
 };
 
 int main(int argc, char** argv) {
-  const int N = 3;  // 3-D Rosenbrock, i.e f(x1, x2, x3)
+  // Use default LineSearchMinimizer
   cppmin::LineSearchMinimizer::Summary summary;
   cppmin::LineSearchMinimizer minimizer;
-  Rosenbrock rosen(N);
-  double solution[N];
 
-  // starting point is (0, 0, ..,0)
-  for (int i = 0; i < N; ++i) {
-    solution[i] = 0.0;
-  }
+  Rosenbrock rosen;
+  double solution[2] = {0.0, 0.0};  // starting point is (0, 0)
 
   minimizer.Minimize(rosen, solution, &summary);
   std::cout << summary << std::endl;
 
   std::cout << "Solution: " << std::endl;
-  for (int i = 0; i < N; ++i) {
-    std::cout << solution[i] << "\n";
-  }
+  std::cout << "x = " << solution[0] << std::endl;
+  std::cout << "y = " << solution[1] << std::endl;
+
   return 0;
 }
