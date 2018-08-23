@@ -98,7 +98,6 @@ The idea of [line search minimization](https://en.wikipedia.org/wiki/Line_search
   * Initialize a search direction `search_direction`
 2. Repeat until some stopping criteria are met (usually the gradient norm
 falls below some threshold):
-  * Use line search algorithm like `ARMIJO` or `WOLFE` to compute the step
-  size along the `search_direction`.
+  * Use some line search algorithm like [Armijo](https://en.wikipedia.org/wiki/Backtracking_line_search) or [Wolfe](https://en.wikipedia.org/wiki/Wolfe_conditions) to compute the step size along the `search_direction`.
   * Update solution: `x <- x + step_size * search_direction`
   * Update `search_direction`.
