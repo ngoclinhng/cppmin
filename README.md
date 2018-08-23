@@ -97,10 +97,9 @@ The idea of [line search minimization](https://en.wikipedia.org/wiki/Line_search
 Given the objective function `f`, a starting point `x`, `LineSearchMinimizer`
 estimates the global minimizer of `f` by building a sequence `{x_k}` such that `f(x_{k+1}) < f(x_k)`, and `|f'(x_k)| -> 0` as `k -> infinity`. It does that using the following algorithm:
 
-1. Setup: Initialize a `search_direction` (usually the steepest descent direction at the starting point `-f(x)`).
+1. Setup: initialize a `search_direction` (usually the steepest descent direction at the starting point `-f'(x)`).
 
-2. Repeat until some stopping criteria are met (usually the L2-norm of
-gradient falls below some threshold):
+2. Repeat until some stopping criteria are met (e.g `|f'(x_k)| < threshold`):
   * Use some line search algorithm ([Armijo](https://en.wikipedia.org/wiki/Backtracking_line_search), [Wolfe](https://en.wikipedia.org/wiki/Wolfe_conditions), etc...) to compute a suitable `step_size` along the `search_direction`
   so that:
   
@@ -111,3 +110,57 @@ gradient falls below some threshold):
   * Update `search_direction`.
 
 ### Armijo and Wolfe Line Search
+
+Let's say we're now at the current position `x_k` with a `search_direction`
+in which to take the next step. The question is how big a step should we
+take?
+
+Denote `phi(s) = f(x_k + s * search_direction), s >= 0`.
+
+Ideally we would want to find a `step_size > 0` such that it minimizes the
+`phi` function above. In practice, this is hard, computational expensive, and
+often not worthwhile. Instead we use some cheap iterative schemes to find
+a `step_size` that is 'good enough'. `LineSearchMinimizer` lets you freely determine how good a step size is by customizing `line_search_type` option
+and a bunch of other line search related parameters (see header file).
+
+  ```cpp
+  cppmin::LineSearchMinimizer::Options options;
+
+  // use Armijo line search:
+  options.line_search_type = cppmin::ARMIJO;
+
+  // Use strong Wolfe line search:
+  options.line_search_type = cppmin::WOLFE;
+  ```
+`ARMIJO` produces a `step_size` which satisfies the so-called sufficient
+decrease condition:
+
+  `f(x_k + step_size * search_direction) <= f(x_k) + step_size * sufficient_decrease * f'(x_k) * search_direction`
+
+   in which `sufficient_decrease` is some constant in the interval `(0, 1)`
+   By default is is set to `0.0001`. You can change it by adjusting
+   `options.sufficient_decrease` option:
+   ```cpp
+   cppmin::LineSearchMinimizer::Options options;
+   options.line_search_type = cppmin::ARMIJO;
+   options.sufficient_decrease = 0.001;
+   ```
+whereas, (strong) `WOLFE` produces a `step_size` which satisfies the above
+sufficient decrease condition and an additional condition named curvature
+condition:
+
+  `|f'(x_k + step_size * search_direction) * search_direction| <= sufficient_curvature_decrease * |f'(x_k) * search_direction|`
+  in which `sufficient_curvature_decrease` is a some constant such that
+  `0 < sufficient_decrease < sufficient_curvature_decrease < 1`. As with
+  `sufficient_decrease`, you can change this paramater by adjusting
+  `options.sufficient_curvature_decrease` option. By default it is set to
+  `0.9`
+  ```cpp
+  cppmin::LineSearchMinimizer::Options options;
+  options.line_search_type = cppmin::WOLFE;
+  options.sufficient_decrease = 0.003;
+  options.sufficient_curvature_decrease = 0.8
+  ```
+  
+
+
