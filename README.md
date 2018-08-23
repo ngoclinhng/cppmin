@@ -136,6 +136,7 @@ and a bunch of other line search related parameters (see header file).
 decrease condition:
 
    `f(x_k + step_size * search_direction) <=
+   
     f(x_k) + step_size * sufficient_decrease * f'(x_k) * search_direction`
     
 in which `sufficient_decrease` is some constant in the interval `(0, 1)`.
