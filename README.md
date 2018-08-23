@@ -119,14 +119,14 @@ Denote `phi(s) = f(x_k + s * search_direction), s >= 0`.
 
 Ideally we would want to find a `step_size > 0` such that it minimizes the
 `phi` function above. In practice, this is hard, computational expensive, and
-often not worthwhile. Instead we use some cheap iterative schemes to find
-a `step_size` that is 'good enough'. `LineSearchMinimizer` lets you freely determine how good a step size is by customizing `line_search_type` option
+often not worthwhile. Instead we use some cheap, iterative scheme to find
+a `step_size` that is 'good enough'. `LineSearchMinimizer` lets you freely determine how good a step size is by customizing the `line_search_type` option
 and a bunch of other line search related parameters (see header file).
 
   ```cpp
   cppmin::LineSearchMinimizer::Options options;
 
-  // use Armijo line search:
+  // Use Armijo line search:
   options.line_search_type = cppmin::ARMIJO;
 
   // Use strong Wolfe line search:
@@ -135,10 +135,11 @@ and a bunch of other line search related parameters (see header file).
 `ARMIJO` produces a `step_size` which satisfies the so-called sufficient
 decrease condition:
 
-  `f(x_k + step_size * search_direction) <= f(x_k) + step_size * sufficient_decrease * f'(x_k) * search_direction`
-
-   in which `sufficient_decrease` is some constant in the interval `(0, 1)`
-   By default is is set to `0.0001`. You can change it by adjusting
+   `f(x_k + step_size * search_direction) <=
+    f(x_k) + step_size * sufficient_decrease * f'(x_k) * search_direction`
+    
+in which `sufficient_decrease` is some constant in the interval `(0, 1)`.
+By default is is set to `0.0001`. You can change it by adjusting the
    `options.sufficient_decrease` option:
    ```cpp
    cppmin::LineSearchMinimizer::Options options;
@@ -149,12 +150,13 @@ whereas, (strong) `WOLFE` produces a `step_size` which satisfies the above
 sufficient decrease condition and an additional condition named curvature
 condition:
 
-  `|f'(x_k + step_size * search_direction) * search_direction| <= sufficient_curvature_decrease * |f'(x_k) * search_direction|`
-  in which `sufficient_curvature_decrease` is a some constant such that
-  `0 < sufficient_decrease < sufficient_curvature_decrease < 1`. As with
-  `sufficient_decrease`, you can change this paramater by adjusting
-  `options.sufficient_curvature_decrease` option. By default it is set to
-  `0.9`
+   `|f'(x_k + step_size * search_direction) * search_direction|
+    <= sufficient_curvature_decrease * |f'(x_k) * search_direction|`
+    
+in which `sufficient_curvature_decrease` is a some constant such that
+`0 < sufficient_decrease < sufficient_curvature_decrease < 1`. As with
+`sufficient_decrease`, you can change this paramater by adjusting the
+`options.sufficient_curvature_decrease` option. By default it is set to `0.9`
   ```cpp
   cppmin::LineSearchMinimizer::Options options;
   options.line_search_type = cppmin::WOLFE;
