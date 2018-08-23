@@ -132,8 +132,8 @@ and a bunch of other line search related parameters (see header file).
   // Use strong Wolfe line search:
   options.line_search_type = cppmin::WOLFE;
   ```
-`ARMIJO` produces a `step_size` which satisfies the so-called *sufficient
-decrease* condition:
+[ARMIJO](https://en.wikipedia.org/wiki/Backtracking_line_search) produces
+a `step_size` which satisfies the so-called *sufficient decrease* condition:
   ```
   f(x_k + step_size * search_direction) <=
   f(x_k) + step_size * sufficient_decrease * f'(x_k) * search_direction
@@ -146,9 +146,9 @@ By default is is set to `0.0001`. You can change it by adjusting the
   options.line_search_type = cppmin::ARMIJO;
   options.sufficient_decrease = 0.001;
   ```
-Whereas, (strong) `WOLFE` produces a `step_size` which satisfies the
-*sufficient decrease* condition and an additional condition named *curvature
-condition*:
+Whereas, (strong) [WOLFE](https://en.wikipedia.org/wiki/Wolfe_conditions)
+produces a `step_size` which satisfies the *sufficient decrease* condition
+and an additional condition named *curvature condition*:
   ```
   |f'(x_k + step_size * search_direction) * search_direction| <=
   sufficient_curvature_decrease * |f'(x_k) * search_direction|
