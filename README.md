@@ -93,14 +93,16 @@ LineSearchMinimizer
 ===================
 
 The idea of [line search minimization](https://en.wikipedia.org/wiki/Line_search) is rather simple:
+
 Given the objective function `f`, a starting point `x`, `LineSearchMinimizer`
 estimates the global minimizer of `f` by building a sequence `{x_k}` such that `f(x_{k+1}) <= f(x_k)`, and `|f'(x_k)| -> 0` as `k -> infinity`. It does that using the following algorithm:
 
 1. Setup: Initialize a `search_direction` (usually the steepest descent direction at the starting point `-f(x)`).
 
 2. Repeat until some stopping criteria are met (usually the L2-norm of
-gradiet falls below some threshold):
-  * Use some line search algorithm([Armijo](https://en.wikipedia.org/wiki/Backtracking_line_search), [Wolfe](https://en.wikipedia.org/wiki/Wolfe_conditions, etc..) to compute the `step_size` along the `search_direction` so that:
+gradient falls below some threshold):
+  * Use some line search algorithm ([Armijo](https://en.wikipedia.org/wiki/Backtracking_line_search), [Wolfe](https://en.wikipedia.org/wiki/Wolfe_conditions), etc...) to compute the `step_size` along the `search_direction` so that:
+  
     `f(x_k + step_size * search_direction) < f(x_k)`
   
   * Update solution: `x <- x + step_size * search_direction`
