@@ -7,8 +7,6 @@
 #ifndef CPPMIN_INTERNAL_INTERPOLATION_H_
 #define CPPMIN_INTERNAL_INTERPOLATION_H_
 
-#include <cmath>
-
 namespace cppmin {
 namespace internal {
 

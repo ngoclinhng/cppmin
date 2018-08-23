@@ -65,6 +65,7 @@
 
 #include <cstddef>
 #include <cstring>
+#include <cmath>
 #include <iostream>
 
 #include "cppmin_blas.h"  // NOLINT
